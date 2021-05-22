@@ -1,0 +1,12 @@
+{
+    "name":"skrtdev/json2",
+    "description":"JSON2 converts json and arrays in structured classes",
+    "autoload":{
+        "psr-4":{
+            "skrtdev\\JSON2\\":"src/"
+        },
+        "files":[
+            "src/utils.php"
+        ]
+    }
+}
