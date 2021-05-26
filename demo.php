@@ -1,6 +1,6 @@
 <?php
 
-use skrtdev\JSON2\JSONProperty;
+use skrtdev\JSON2\{Decodeable, JSONProperty};
 
 require 'vendor/autoload.php';
 

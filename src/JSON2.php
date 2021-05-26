@@ -2,7 +2,7 @@
 
 namespace skrtdev\JSON2;
 
-use Error, Exception, ReflectionClass, ReflectionException, ReflectionNamedType, ReflectionUnionType;
+use Error, ReflectionClass, ReflectionException, ReflectionNamedType, ReflectionUnionType;
 
 const TYPEKEY = '_';
 
@@ -10,6 +10,7 @@ class JSON2 {
 
     public static bool $array_as_stdClass = false;
 
+    protected static array $reflections = [];
     protected static array $class_attributes = [];
     protected static array $class_init_vars = [];
     protected static array $class_required_init_vars = [];
@@ -18,7 +19,7 @@ class JSON2 {
     protected static array $required_properties = [];
 
     /**
-     * @throws ReflectionException
+     * @throws InexistentClassException
      * @throws Exception
      */
     public static function ArrayToClass(array $array, ?string $class, array $vars = []): object|array
@@ -29,7 +30,7 @@ class JSON2 {
         $init_vars = self::getInitVars($class);
         $different_properties = self::getDifferentProperties($class);
 
-        $reflection = new ReflectionClass($class);
+        $reflection = self::getClassReflection($class);
         // fixme maybe use ReflectionClass::getProperties() in order to set properties, but make sure to set even non-declared properties
 
         $final_array = [];
@@ -67,7 +68,12 @@ class JSON2 {
             return new $class($final_array);
         }
         else {
-            $instance = $reflection->newInstanceWithoutConstructor();
+            try {
+                $instance = $reflection->newInstanceWithoutConstructor();
+            }
+            catch(ReflectionException $e){
+                throw new Exception("Couldn't instantiate $class, as it is an internal class. Consider open an issue if you think this is a bug");
+            }
             (function () use ($final_array) {
                 foreach ($final_array as $key => $value) {
                     $this->$key = $value;
@@ -78,9 +84,22 @@ class JSON2 {
     }
 
     /**
+     * @throws InexistentClassException
+     */
+    public static function getClassReflection(string $class): ReflectionClass
+    {
+        try {
+            return self::$reflections[$class] ??= new ReflectionClass($class);
+        }
+        catch (ReflectionException $e){
+            throw new InexistentClassException($class, 0, $e);
+        }
+    }
+
+    /**
      * @param string $class
      * @return JSONProperty[]
-     * @throws ReflectionException
+     * @throws InexistentClassException
      */
     public static function getClassAttributes(string $class): array
     {
@@ -88,7 +107,7 @@ class JSON2 {
             return self::$class_attributes[$class];
         }
 
-        $reflection = new ReflectionClass($class);
+        $reflection = self::getClassReflection($class);
         $attributes = [];
 
         foreach ($reflection->getProperties() as $property) {
@@ -101,7 +120,9 @@ class JSON2 {
     }
 
     /**
-     * @throws ReflectionException
+     * @param string $class
+     * @return array
+     * @throws InexistentClassException
      */
     public static function getInitVars(string $class): array {
         if(isset(self::$class_init_vars[$class])){
@@ -119,7 +140,9 @@ class JSON2 {
     }
 
     /**
-     * @throws ReflectionException
+     * @param string $class
+     * @return array
+     * @throws InexistentClassException
      */
     public static function getRequiredInitVars(string $class): array {
         if(isset(self::$class_required_init_vars[$class])){
@@ -137,7 +160,9 @@ class JSON2 {
     }
 
     /**
-     * @throws ReflectionException
+     * @param string $class
+     * @return array
+     * @throws InexistentClassException
      */
     public static function getDifferentProperties(string $class): array {
         if(isset(self::$different_properties[$class])){
@@ -155,7 +180,9 @@ class JSON2 {
     }
 
     /**
-     * @throws ReflectionException
+     * @param string $class
+     * @return array
+     * @throws InexistentClassException
      */
     public static function getSkippedProperties(string $class): array {
         if(isset(self::$skipped_properties[$class])){
@@ -173,7 +200,9 @@ class JSON2 {
     }
 
     /**
-     * @throws ReflectionException
+     * @param string $class
+     * @return array
+     * @throws InexistentClassException
      */
     public static function getRequiredProperties(string $class): array {
         if(isset(self::$required_properties[$class])){
@@ -192,7 +221,6 @@ class JSON2 {
 
 
     /**
-     * @throws ReflectionException
      */
     public static function ArrayToClassList(array $array, string $class, array $vars = []): array
     {

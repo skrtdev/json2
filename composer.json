@@ -8,5 +8,8 @@
         "files":[
             "src/utils.php"
         ]
+    },
+    "require": {
+        "php": "^8.0"
     }
 }

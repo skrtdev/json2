@@ -8,7 +8,7 @@ function is_list(array $array): bool {
 
 
 /**
- * @throws ReflectionException
+ * @throws \skrtdev\JSON2\Exception
  */
 function json2_decode(string|array $json, ?string $class = null, array $vars = [], ...$args): object|array {
     $array = is_string($json) ? json_decode($json, true, flags: JSON_THROW_ON_ERROR) : $json;

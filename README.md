@@ -26,7 +26,12 @@ class Post{
     protected string $body;
     
     protected User $user;
-
+    
+    /**
+     * @var Comment[]
+     */
+    protected array $comments;
+    
     /**
      * @return User
      * @throws ReflectionException
