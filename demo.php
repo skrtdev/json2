@@ -12,6 +12,7 @@ function api_call(...$args): string {
 $posts = json2_decode(api_call('posts'), Post::class);
 
 class Post{
+    // use a different property name
     #[JSONProperty(json: 'userId')]
     protected int $user_id;
     protected int $id;
@@ -19,6 +20,10 @@ class Post{
     protected string $body;
     
     protected User $user;
+    /**
+     * @var Comment[]
+     */
+    protected array $comments;
 
     /**
      * @return User
@@ -38,7 +43,7 @@ class Post{
     }
 }
 
-class User{
+class User extends Decodeable { // you can also extend Decodeable class in order to use a normal constructor
     protected int $id;
     protected string $name;
     protected string $username;
