@@ -40,15 +40,16 @@ class JSON2 {
                 continue;
             }
 
+            if(isset($different_properties[$key])){
+                $key = $different_properties[$key];
+            }
+
             $subclass = is_array($value) ? ($value[TYPEKEY] ?? self::getClassType($reflection, $key, $value) ?? false) : false;
 
             if($subclass){
                 $value = $subclass === 'stdClass' ? (object) $value : (is_list($value) ? self::ArrayToClassList($value, $subclass, $vars) : self::ArrayToClass($value, $subclass, $vars));
             }
-            if(isset($different_properties[$key])){
-                $final_array[$different_properties[$key]] = $value;
-            }
-            else $final_array[$key] = (is_array($value) && self::$array_as_stdClass) ? (object) $value : $value;
+            $final_array[$key] = (is_array($value) && self::$array_as_stdClass) ? (object) $value : $value;
         }
         foreach (self::getRequiredProperties($class) as $key) {
             if(!isset($final_array[$key])){
